@@ -1352,7 +1352,8 @@ def preguntar_ia(pregunta):
         ],
     )
 
-    return respuesta.choices[0].message.contentfrom ai import preguntar_ia
+    return respuesta.choices[0].message.content
+from ai import preguntar_ia
 
 @bot.event
 async def on_message(message):
