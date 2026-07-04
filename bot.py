@@ -1282,9 +1282,9 @@ async def firmar(
         value=f"**{usuario.display_name}**",
         inline=True
     )
-
     embed.set_footer(
         text="Elite Chile Roleplay © Todos los derechos reservados"
+)
  import os
 from dotenv import load_dotenv
 from google import genai
@@ -1300,7 +1300,7 @@ async def preguntar_ia(pregunta: str):
             model="gemini-2.5-flash",
             contents=f"""
 Eres el asistente oficial de Chile Metropolitano Roleplay.
-)
+
 
 Responde siempre en español.
 Sé amable, claro y útil.
