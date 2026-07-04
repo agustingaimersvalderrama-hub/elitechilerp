@@ -16,7 +16,12 @@ import os
 from dotenv import load_dotenv
 from google import genai
 load_dotenv()
+import discord
 
+intents = discord.Intents.default()
+intents.message_content = True
+
+bot = commands.Bot(command_prefix="!", intents=intents)
 client_ai = genai.Client(
     api_key=os.getenv("GEMINI_API_KEY")
 )
