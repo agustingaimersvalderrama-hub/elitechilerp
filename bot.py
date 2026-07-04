@@ -1414,12 +1414,28 @@ Sistema del servidor:
 prompt = f"""
 {contexto_economia}
 
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return
+
+    if bot.user in message.mentions:
+
+        if "como gano dinero" in message.content.lower():
+            await message.reply("💡 Puedes usar !trabajar, !daily o intentar !robar en el servidor.")
+            return
+
+        prompt = f"""
+{contexto_economia}
+
 Usuario pregunta:
-{pregunta}
+{message.content}
 """
-if "como gano dinero" in message.content.lower():
-    await message.reply("💡 Puedes usar !trabajar, !daily o intentar !robar en el servidor.")
-    return
+
+        respuesta = await preguntar_ia(prompt)
+        await message.reply(respuesta)
+
+    await bot.process_commands(message)
 @bot.command()
 async def apostar(ctx, partido: str, equipo: str, monto: int):
     dinero, banco = get_dinero(ctx.author.id)
