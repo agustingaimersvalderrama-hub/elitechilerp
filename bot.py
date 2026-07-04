@@ -12,6 +12,14 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 import random
 from dotenv import load_dotenv
 load_dotenv()
+import os
+from dotenv import load_dotenv
+from google import genai
+load_dotenv()
+
+client_ai = genai.Client(
+    api_key=os.getenv("GEMINI_API_KEY")
+)
 
 @bot.event
 async def on_ready():
@@ -1285,15 +1293,6 @@ async def firmar(
     embed.set_footer(
         text="Elite Chile Roleplay © Todos los derechos reservados"
 )
- import os
-from dotenv import load_dotenv
-from google import genai
-
-load_dotenv()
-
-client_ai = genai.Client(
-    api_key=os.getenv("GEMINI_API_KEY")
-)
 async def preguntar_ia(pregunta: str):
     try:
         respuesta = client_ai.models.generate_content(
@@ -1301,11 +1300,12 @@ async def preguntar_ia(pregunta: str):
             contents=f"""
 Eres el asistente oficial de Chile Metropolitano Roleplay.
 
+Reglas:
+- Responde siempre en español
+- Sé claro, breve y útil
+- No inventes información del servidor
 
-Responde siempre en español.
-Sé amable, claro y útil.
-
-Pregunta:
+Usuario pregunta:
 {pregunta}
 """
         )
@@ -1339,6 +1339,12 @@ async def on_message(message):
         await message.reply(respuesta)
 
     await bot.process_commands(message)
+
+load_dotenv()
+
+client_ai = genai.Client(
+    api_key=os.getenv("GEMINI_API_KEY")
+)
     
 
 
