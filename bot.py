@@ -13,17 +13,6 @@ import random
 from dotenv import load_dotenv
 load_dotenv()
 
-from ai import preguntar_ia
-import os
-from dotenv import load_dotenv
-from openai import OpenAI
-
-load_dotenv()
-
-client_ai = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY")
-)
-
 @bot.event
 async def on_ready():
     try:
@@ -1296,97 +1285,10 @@ async def firmar(
 
     embed.set_footer(
         text="Elite Chile Roleplay © Todos los derechos reservados"
-    )
-
-    await interaction.response.send_message(
-        content=f"{usuario.mention}",
-        embed=embed
-    )
+ 
     
 
-@bot.event
-async def on_message(message):
-    if message.author.bot:
-        return
 
-    if bot.user in message.mentions:
-        pregunta = (
-            message.content.replace(f"<@{bot.user.id}>", "")
-                           .replace(f"<@!{bot.user.id}>", "")
-                           .strip()
-        )
-
-        respuesta = preguntar_ia(pregunta)
-
-        await message.reply(respuesta)
-
-    await bot.process_commands(message)
-
-
-import discord
-
-intents = discord.Intents.default()
-intents.message_content = True
-
-bot = commands.Bot(command_prefix="!", intents=intents)
-async def preguntar_ia(pregunta: str):
-    try:
-        respuesta = client.chat.completions.create(
-            model="gpt-5",
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "Eres el asistente oficial de Chile Metropolitano Roleplay. "
-                        "Responde siempre en español, de forma amable y clara. "
-                        "Si no sabes algo del servidor, dilo en lugar de inventarlo."
-                    )
-                },
-                {
-                    "role": "user",
-                    "content": pregunta
-                }
-            ]
-        )
-
-        return respuesta.choices[0].message.content
-
-    except Exception as e:
-        print(e)
-        return f"❌ Error al consultar la IA:\n{e}"
-async def preguntar_ia(pregunta: str):
-    respuesta = client_ai.responses.create(
-        model="gpt-5",
-        input=(
-            "Eres el asistente oficial de Chile Metropolitano Roleplay. "
-            f"Responde en español.\n\nUsuario: {pregunta}"
-        )
-    )
-
-    return respuesta.output_text
-@bot.event
-async def on_message(message):
-    if message.author.bot:
-        return
-
-    if bot.user in message.mentions:
-
-        pregunta = (
-            message.content
-            .replace(f"<@{bot.user.id}>", "")
-            .replace(f"<@!{bot.user.id}>", "")
-            .strip()
-        )
-
-        if pregunta:
-            async with message.channel.typing():
-                try:
-                    respuesta = await preguntar_ia(pregunta)
-                    await message.reply(respuesta)
-                except Exception as e:
-                    await message.reply(f"Error con la IA: {e}")
-
-    await bot.process_commands(message)
 import os
 
 bot.run(os.getenv("TOKEN"))
