@@ -1329,6 +1329,47 @@ async def on_message(message):
         await message.reply("¡Hola! Me mencionaste.")
 
     await bot.process_commands(message)
+from openai import OpenAI
+import os
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+def preguntar_ia(pregunta):
+    respuesta = client.chat.completions.create(
+        model="gpt-5",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "Eres el asistente oficial de Chile Metropolitano Roleplay. "
+                    "Responde de forma clara, amable y en español."
+                ),
+            },
+            {
+                "role": "user",
+                "content": pregunta,
+            },
+        ],
+    )
+
+    return respuesta.choices[0].message.contentfrom ai import preguntar_ia
+
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return
+
+    if bot.user in message.mentions:
+        pregunta = (
+            message.content.replace(f"<@{bot.user.id}>", "")
+                           .replace(f"<@!{bot.user.id}>", "")
+                           .strip()
+        )
+
+        respuesta = preguntar_ia(pregunta)
+        await message.reply(respuesta)
+
+    await bot.process_commands(message)
 
 import os
 
