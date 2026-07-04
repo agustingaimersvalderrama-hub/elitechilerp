@@ -1350,8 +1350,6 @@ load_dotenv()
 client_ai = genai.Client(
     api_key=os.getenv("GEMINI_API_KEY")
 )
-    
-
 
 import os
 
