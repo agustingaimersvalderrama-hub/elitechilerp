@@ -17,7 +17,11 @@ from dotenv import load_dotenv
 from google import genai
 load_dotenv()
 import discord
-
+import sqlite3
+import discord
+from discord.ext import commands
+import random
+import asyncio
 intents = discord.Intents.default()
 intents.message_content = True
 
@@ -1344,6 +1348,153 @@ async def on_message(message):
         await message.reply(respuesta)
 
     await bot.process_commands(message)
+conn = sqlite3.connect("economia.db")
+cursor = conn.cursor()
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS usuarios (
+    user_id INTEGER PRIMARY KEY,
+    dinero INTEGER DEFAULT 0,
+    banco INTEGER DEFAULT 0
+)
+""")
+
+def asegurar_usuario(user_id):
+    cursor.execute("SELECT * FROM usuarios WHERE user_id = ?", (user_id,))
+    if not cursor.fetchone():
+        cursor.execute(
+            "INSERT INTO usuarios (user_id, dinero, banco) VALUES (?, 0, 0)",
+            (user_id,)
+        )
+        conn.commit()
+
+
+def get_dinero(user_id):
+    asegurar_usuario(user_id)
+    cursor.execute("SELECT dinero, banco FROM usuarios WHERE user_id = ?", (user_id,))
+    return cursor.fetchone()
+
+
+def update_dinero(user_id, cantidad):
+    asegurar_usuario(user_id)
+    cursor.execute("UPDATE usuarios SET dinero = dinero + ? WHERE user_id = ?", (cantidad, user_id))
+    conn.commit()
+
+@bot.command()
+async def balance(ctx):
+    dinero, banco = get_dinero(ctx.author.id)
+
+    embed = discord.Embed(
+        title="💰 Balance",
+        description=f"Dinero: ${dinero}\nBanco: ${banco}",
+        color=discord.Color.green()
+    )
+
+    await ctx.send(embed=embed)
+@bot.command()
+async def trabajar(ctx):
+    ganar = random.randint(50, 200)
+    update_dinero(ctx.author.id, ganar)
+
+    await ctx.send(f"💼 Trabajaste y ganaste ${ganar}")
+@bot.command()
+async def daily(ctx):
+    ganar = random.randint(200, 500)
+    update_dinero(ctx.author.id, ganar)
+
+    await ctx.send(f"🎁 Recompensa diaria: ${ganar}")
+
+contexto_economia = """
+Sistema del servidor:
+- Moneda: $
+- Puedes trabajar, robar, reclamar daily
+- Economía RP de Chile Metropolitano Roleplay
+"""
+
+prompt = f"""
+{contexto_economia}
+
+Usuario pregunta:
+{pregunta}
+"""
+if "como gano dinero" in message.content.lower():
+    await message.reply("💡 Puedes usar !trabajar, !daily o intentar !robar en el servidor.")
+    return
+@bot.command()
+async def apostar(ctx, partido: str, equipo: str, monto: int):
+    dinero, banco = get_dinero(ctx.author.id)
+
+    if monto <= 0:
+        return await ctx.send("❌ El monto debe ser mayor a 0")
+
+    if dinero < monto:
+        return await ctx.send("❌ No tienes suficiente dinero")
+
+    # descontar dinero
+    update_dinero(ctx.author.id, -monto)
+
+    cursor.execute(
+        "INSERT INTO apuestas VALUES (?, ?, ?, ?)",
+        (ctx.author.id, partido, equipo.lower(), monto)
+    )
+    conn.commit()
+
+    await ctx.send(
+        f"⚽ Apuesta registrada!\n"
+        f"Partido: {partido}\n"
+        f"Equipo: {equipo}\n"
+        f"Monto: ${monto}"
+    )
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def resultado(ctx, partido: str, ganador: str):
+    ganador = ganador.lower()
+
+    cursor.execute(
+        "SELECT user_id, monto FROM apuestas WHERE partido = ? AND equipo = ?",
+        (partido, ganador)
+    )
+
+    ganadores = cursor.fetchall()
+
+    if not ganadores:
+        return await ctx.send("❌ Nadie acertó el resultado")
+
+    total_pagado = 0
+
+    for user_id, monto in ganadores:
+        premio = monto * 2  # x2 ganancia
+        update_dinero(user_id, premio)
+        total_pagado += premio
+
+    cursor.execute("DELETE FROM apuestas WHERE partido = ?", (partido,))
+    conn.commit()
+
+    await ctx.send(
+        f"🏆 Resultado del partido {partido}: {ganador.upper()}\n"
+        f"💰 Se pagaron ${total_pagado} en premios"
+    )
+
+@bot.command()
+async def misapuestas(ctx):
+    cursor.execute(
+        "SELECT partido, equipo, monto FROM apuestas WHERE user_id = ?",
+        (ctx.author.id,)
+    )
+
+    data = cursor.fetchall()
+
+    if not data:
+        return await ctx.send("❌ No tienes apuestas activas")
+
+    msg = "⚽ Tus apuestas:\n"
+    for partido, equipo, monto in data:
+        msg += f"- {partido}: {equipo} (${monto})\n"
+
+    await ctx.send(msg)
+
+conn.commit()
 
 load_dotenv()
 
