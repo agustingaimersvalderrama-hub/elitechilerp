@@ -14,6 +14,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from ai import preguntar_ia
+import os
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv()
+
+client_ai = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY")
+)
 
 @bot.event
 async def on_ready():
