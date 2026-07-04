@@ -1319,7 +1319,8 @@ import discord
 intents = discord.Intents.default()
 intents.message_content = True
 
-bot = commands.Bot(command_prefix="!", intents=intents)async def preguntar_ia(pregunta: str):
+bot = commands.Bot(command_prefix="!", intents=intents)
+async def preguntar_ia(pregunta: str):
     try:
         respuesta = client.chat.completions.create(
             model="gpt-5",
