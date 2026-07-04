@@ -1392,18 +1392,11 @@ async def balance(ctx):
 
     await ctx.send(embed=embed)
 @bot.command()
-async def trabajar(ctx):
-    ganar = random.randint(50, 200)
-    update_dinero(ctx.author.id, ganar)
-
-    await ctx.send(f"💼 Trabajaste y ganaste ${ganar}")
-@bot.command()
 async def daily(ctx):
     ganar = random.randint(200, 500)
     update_dinero(ctx.author.id, ganar)
 
     await ctx.send(f"🎁 Recompensa diaria: ${ganar}")
-
 contexto_economia = """
 Sistema del servidor:
 - Moneda: $
