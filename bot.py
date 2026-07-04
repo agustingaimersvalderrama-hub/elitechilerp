@@ -1285,7 +1285,60 @@ async def firmar(
 
     embed.set_footer(
         text="Elite Chile Roleplay © Todos los derechos reservados"
- 
+ import os
+from dotenv import load_dotenv
+from google import genai
+
+load_dotenv()
+
+client_ai = genai.Client(
+    api_key=os.getenv("GEMINI_API_KEY")
+)
+async def preguntar_ia(pregunta: str):
+    try:
+        respuesta = client_ai.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=f"""
+Eres el asistente oficial de Chile Metropolitano Roleplay.
+)
+
+Responde siempre en español.
+Sé amable, claro y útil.
+
+Pregunta:
+{pregunta}
+"""
+        )
+
+        return respuesta.text
+
+    except Exception as e:
+        print(e)
+        return f"❌ Error con Gemini: {e}"
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return
+
+    if bot.user in message.mentions:
+
+        pregunta = (
+            message.content
+            .replace(f"<@{bot.user.id}>", "")
+            .replace(f"<@!{bot.user.id}>", "")
+            .strip()
+        )
+
+        if not pregunta:
+            await message.reply("¿En qué puedo ayudarte?")
+            return
+
+        async with message.channel.typing():
+            respuesta = await preguntar_ia(pregunta)
+
+        await message.reply(respuesta)
+
+    await bot.process_commands(message)
     
 
 
