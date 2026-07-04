@@ -1325,7 +1325,7 @@ Usuario pregunta:
         print(e)
         return f"❌ Error con Gemini: {e}"
 
-conn.commit()
+
 
 load_dotenv()
 
