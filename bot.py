@@ -13,6 +13,7 @@ import random
 from dotenv import load_dotenv
 load_dotenv()
 
+from ai import preguntar_ia
 
 @bot.event
 async def on_ready():
